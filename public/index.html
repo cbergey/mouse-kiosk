@@ -5,7 +5,6 @@
 <title>Mouse Arts & Letters Club - Donate</title>
 <script src="https://js.stripe.com/terminal/v1/"></script>
 <style>
-  /* --- Base Styles --- */
   body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #342316;
@@ -33,9 +32,7 @@
     transition: transform 0.2s ease;
   }
 
-  header img:hover {
-    transform: scale(1.05);
-  }
+  header img:hover { transform: scale(1.05); }
 
   header h1 {
     font-size: 32px;
@@ -45,7 +42,6 @@
     color: #fff;
   }
 
-  /* --- Donation Buttons --- */
   #buttons {
     display: flex;
     flex-direction: column;
@@ -82,7 +78,6 @@
     box-shadow: 0 6px 15px rgba(0,0,0,0.35);
   }
 
-  /* --- Status Message --- */
   #status {
     margin-top: 20px;
     font-size: 20px;
@@ -92,7 +87,6 @@
     z-index: 2;
   }
 
-  /* --- Confetti --- */
   .confetti {
     position: absolute;
     width: 6px;
@@ -100,23 +94,15 @@
     background: white;
     top: -10px;
     pointer-events: none;
-    opacity: 1;
     border-radius: 50%;
-    animation: fall linear forwards, sway infinite linear;
+    animation: fall linear forwards;
   }
 
   @keyframes fall {
-    0% { transform: translateY(0px); opacity: 1; }
+    0% { transform: translateY(0); opacity: 1; }
     100% { transform: translateY(700px); opacity: 0; }
   }
 
-  @keyframes sway {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(10px); }
-    100% { transform: translateX(0); }
-  }
-
-  /* --- Thank You Message --- */
   #thankyou {
     position: fixed;
     bottom: 50px;
@@ -146,16 +132,13 @@
 
 <script>
 let donationOptions = [500, 1000, 1500];
-
-// --- Admin variables ---
 let adminClickCount = 0;
 const adminClickThreshold = 5;
 
-// --- Render Buttons ---
+// Render buttons
 function renderButtons() {
   const container = document.getElementById("buttons");
   container.innerHTML = "";
-
   donationOptions.forEach(amount => {
     const btn = document.createElement("button");
     btn.className = "donation";
@@ -165,16 +148,15 @@ function renderButtons() {
   });
 }
 
-// --- Donation Handler ---
+// Donation handler
 function startDonation(amount) {
   const status = document.getElementById("status");
   status.innerText = `Donation ready! Tap reader once Stripe is set up.`;
-
   launchConfetti();
   showThankYou();
 }
 
-// --- Confetti Function ---
+// Confetti function with sway
 function launchConfetti() {
   const count = 80;
   for (let i = 0; i < count; i++) {
@@ -183,37 +165,48 @@ function launchConfetti() {
     conf.style.left = Math.random() * window.innerWidth + "px";
     const size = 4 + Math.random() * 6;
     conf.style.width = conf.style.height = size + "px";
-
-    // Random fall duration between 1.5–3.0s
     conf.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
 
-    // Random sway delay
-    conf.style.animationDelay = (Math.random() * 0.5) + "s";
+    // sway with JS
+    let swayOffset = 0;
+    let swayDirection = Math.random() > 0.5 ? 1 : -1;
+    const swayAmount = 10;
+    const swaySpeed = 50 + Math.random() * 50;
+    const startTop = -10;
+    const startLeft = parseFloat(conf.style.left);
+
+    const interval = setInterval(() => {
+      swayOffset += swayDirection;
+      if (swayOffset > swayAmount || swayOffset < -swayAmount) swayDirection *= -1;
+      const elapsed = (Date.now() % 3500) / 3500; // progress
+      const translateY = elapsed * 700;
+      conf.style.transform = `translate(${startLeft + swayOffset}px, ${translateY}px)`;
+    }, swaySpeed);
 
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 3500); // remove after animation
+    setTimeout(() => { clearInterval(interval); conf.remove(); }, 3500);
   }
 }
 
-// --- Thank You Message ---
+// Show thank you
 function showThankYou() {
   const msg = document.getElementById("thankyou");
   msg.style.opacity = "1";
   setTimeout(() => { msg.style.opacity = "0"; }, 2200);
 }
 
-// --- Admin Interface ---
+// Admin panel
 function enableAdminPanel() {
   const key = prompt("Enter admin key:");
   if (!key) return;
   const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
-  const newOption2 = parseInt(prompt("New amount for second button (in dollars, optional):"), 10);
+  const newOption2 = parseInt(prompt("New amount for second button (optional):"), 10);
   donationOptions = [newOption1*100];
   if (newOption2) donationOptions.push(newOption2*100);
   renderButtons();
 }
 
-// --- Secret Logo Tap ---
+// Secret logo tap
 document.getElementById("logo").addEventListener("click", () => {
   adminClickCount++;
   if (adminClickCount >= adminClickThreshold) {
@@ -222,10 +215,9 @@ document.getElementById("logo").addEventListener("click", () => {
   }
 });
 
-// --- Initialize ---
+// Initialize
 renderButtons();
 </script>
 
 </body>
 </html>
-

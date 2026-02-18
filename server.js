@@ -15,10 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve HTML/JS/CSS
 
-// Serve kiosk HTML at root
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "kiosk.html"));
-});
+
 // ----------------------
 // Database Setup
 // ----------------------

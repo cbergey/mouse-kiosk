@@ -1,15 +1,24 @@
 require("dotenv").config();
+
+const path = require("path");
 const express = require("express");
-const { Pool } = require("pg");
 const cors = require("cors");
+const { Pool } = require("pg");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
+
+// ----------------------
+// Middleware
+// ----------------------
 app.use(cors());
 app.use(express.json());
-const path = require("path");
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // serve HTML/JS/CSS
 
+// Serve kiosk HTML at root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "kiosk.html"));
+});
 // ----------------------
 // Database Setup
 // ----------------------

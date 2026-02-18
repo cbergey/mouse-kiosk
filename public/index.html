@@ -52,7 +52,7 @@
     gap: 20px;
     width: 80%;
     max-width: 300px;
-    margin-top: 60px;
+    margin-top: 40px;
     z-index: 2;
   }
 
@@ -102,7 +102,7 @@
     pointer-events: none;
     opacity: 1;
     border-radius: 50%;
-    animation: fall linear forwards, sway linear infinite;
+    animation: fall linear forwards, sway infinite linear;
   }
 
   @keyframes fall {
@@ -118,8 +118,8 @@
 
   /* --- Thank You Message --- */
   #thankyou {
-    position: absolute;
-    top: 200px; /* below logo but above buttons */
+    position: fixed;
+    bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 36px;
@@ -140,9 +140,9 @@
   <h1>Mouse Arts & Letters Club</h1>
 </header>
 
-<div id="thankyou">Thank you!</div>
 <div id="buttons"></div>
 <div id="status"></div>
+<div id="thankyou">Thank you!</div>
 
 <script>
 let donationOptions = [500, 1000, 1500];
@@ -187,11 +187,11 @@ function launchConfetti() {
     // Random fall duration between 1.5–3.0s
     conf.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
 
-    // Random sway offset
+    // Random sway delay
     conf.style.animationDelay = (Math.random() * 0.5) + "s";
 
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 3000); // remove after animation
+    setTimeout(() => conf.remove(), 3500); // remove after animation
   }
 }
 

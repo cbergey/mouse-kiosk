@@ -17,6 +17,7 @@
     min-height: 100vh;
     color: #fff;
     position: relative;
+    overflow-x: hidden;
   }
 
   header {
@@ -55,27 +56,28 @@
 
   button.donation {
     font-size: 28px;
-    padding: 22px 0;
-    border-radius: 14px;
+    padding: 20px 0;
+    border-radius: 16px;
     border: none;
     cursor: pointer;
-    background: #a69c94;
+    background: rgba(166, 156, 148, 0.8);
     color: #fff;
     width: 100%;
     text-align: center;
     font-weight: 600;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
     transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
   }
 
   button.donation:hover {
-    background: #91897e;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    background: rgba(166, 156, 148, 0.95);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
   }
 
   button.donation:active {
     transform: scale(0.96);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.35);
   }
 
   /* --- Status Message --- */
@@ -93,15 +95,16 @@
     width: 6px;
     height: 6px;
     background: white;
-    top: 0;
+    top: -10px;
     pointer-events: none;
-    animation: fall 1.8s linear forwards;
     opacity: 1;
+    border-radius: 50%;
+    animation: fall linear forwards;
   }
 
   @keyframes fall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(350px) rotate(720deg); opacity: 0.35; }
+    100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
   }
 
   /* --- Thank You Message --- */
@@ -116,7 +119,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.8s ease-in-out;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 8px rgba(0,0,0,0.6);
   }
 </style>
 </head>
@@ -163,16 +166,16 @@ function startDonation(amount) {
 
 // --- Confetti Function ---
 function launchConfetti() {
-  const count = 50;
+  const count = 80;
   for (let i = 0; i < count; i++) {
     const conf = document.createElement("div");
     conf.className = "confetti";
     conf.style.left = Math.random() * window.innerWidth + "px";
     const size = 4 + Math.random() * 4;
     conf.style.width = conf.style.height = size + "px";
-    conf.style.animationDuration = (1.5 + Math.random() * 0.8) + "s";
+    conf.style.animationDuration = (1.5 + Math.random() * 1.2) + "s";
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 2200);
+    setTimeout(() => conf.remove(), 2500);
   }
 }
 
@@ -209,3 +212,4 @@ renderButtons();
 
 </body>
 </html>
+

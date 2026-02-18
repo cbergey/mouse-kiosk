@@ -89,12 +89,9 @@
 
   .confetti {
     position: absolute;
-    width: 6px;
-    height: 6px;
     background: white;
     top: -10px;
     pointer-events: none;
-    border-radius: 50%;
     animation: fall linear forwards;
   }
 
@@ -131,24 +128,24 @@
 <div id="thankyou">Thank you!</div>
 
 <script>
-let donationOptions = [500, 1000, 1500];
+let donationOptions = [500, 1000, 1500]; // default donation amounts
 let adminClickCount = 0;
 const adminClickThreshold = 5;
 
-// Render buttons
+// Render donation buttons
 function renderButtons() {
   const container = document.getElementById("buttons");
   container.innerHTML = "";
   donationOptions.forEach(amount => {
     const btn = document.createElement("button");
     btn.className = "donation";
-    btn.innerText = `Donate $${(amount/100).toFixed(0)}`;
+    btn.innerText = `Donate $${(amount / 100).toFixed(0)}`;
     btn.onclick = () => startDonation(amount);
     container.appendChild(btn);
   });
 }
 
-// Donation handler
+// Handle donation click
 function startDonation(amount) {
   const status = document.getElementById("status");
   status.innerText = `Donation ready! Tap reader once Stripe is set up.`;
@@ -156,29 +153,28 @@ function startDonation(amount) {
   showThankYou();
 }
 
-// Confetti function with sway
+// Confetti function (square confetti)
 function launchConfetti() {
   const count = 80;
   for (let i = 0; i < count; i++) {
     const conf = document.createElement("div");
     conf.className = "confetti";
-    conf.style.left = Math.random() * window.innerWidth + "px";
     const size = 4 + Math.random() * 6;
-    conf.style.width = conf.style.height = size + "px";
+    conf.style.width = conf.style.height = `${size}px`;
+    conf.style.left = Math.random() * window.innerWidth + "px";
     conf.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
 
-    // sway with JS
+    // sway horizontally in JS
     let swayOffset = 0;
     let swayDirection = Math.random() > 0.5 ? 1 : -1;
     const swayAmount = 10;
     const swaySpeed = 50 + Math.random() * 50;
-    const startTop = -10;
     const startLeft = parseFloat(conf.style.left);
 
     const interval = setInterval(() => {
       swayOffset += swayDirection;
       if (swayOffset > swayAmount || swayOffset < -swayAmount) swayDirection *= -1;
-      const elapsed = (Date.now() % 3500) / 3500; // progress
+      const elapsed = (Date.now() % 3500) / 3500;
       const translateY = elapsed * 700;
       conf.style.transform = `translate(${startLeft + swayOffset}px, ${translateY}px)`;
     }, swaySpeed);
@@ -188,25 +184,40 @@ function launchConfetti() {
   }
 }
 
-// Show thank you
+// Show thank-you message
 function showThankYou() {
   const msg = document.getElementById("thankyou");
   msg.style.opacity = "1";
   setTimeout(() => { msg.style.opacity = "0"; }, 2200);
 }
 
-// Admin panel
+// --- Admin panel: call backend for password ---
 function enableAdminPanel() {
-  const key = prompt("Enter admin key:");
+  const key = prompt("Enter admin password:");
   if (!key) return;
-  const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
-  const newOption2 = parseInt(prompt("New amount for second button (optional):"), 10);
-  donationOptions = [newOption1*100];
-  if (newOption2) donationOptions.push(newOption2*100);
-  renderButtons();
+
+  fetch("/api/check-admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: key })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Incorrect password");
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
+      const newOption2 = parseInt(prompt("New amount for second button (optional, in dollars):"), 10);
+      donationOptions = [newOption1 * 100];
+      if (newOption2) donationOptions.push(newOption2 * 100);
+      renderButtons();
+    }
+  })
+  .catch(err => alert(err.message));
 }
 
-// Secret logo tap
+// Secret logo tap for admin
 document.getElementById("logo").addEventListener("click", () => {
   adminClickCount++;
   if (adminClickCount >= adminClickThreshold) {

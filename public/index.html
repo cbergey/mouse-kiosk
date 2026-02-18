@@ -2,48 +2,91 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tap to Donate</title>
+<title>Mouse Arts & Letters Club - Donate</title>
 <script src="https://js.stripe.com/terminal/v1/"></script>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f4f6f8;
-    padding-top: 80px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(to bottom, #fefefe, #e0f0ff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-  h1 { margin-bottom: 40px; }
+
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+
+  header img {
+    max-width: 150px;
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-size: 36px;
+    margin: 0;
+    color: #333;
+  }
+
+  #buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 20px;
+  }
+
   button.donation {
-    font-size: 32px;
-    padding: 30px 60px;
-    margin: 20px;
+    font-size: 28px;
+    padding: 25px 50px;
+    border-radius: 15px;
     border: none;
-    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
     background: #2e7d32;
     color: white;
-    cursor: pointer;
-    transition: transform 0.1s;
+    flex: 1 1 200px;
+    max-width: 250px;
   }
-  button.donation:active { transform: scale(0.95); }
-  #status { margin-top: 40px; font-size: 24px; color: #333; }
+
+  button.donation:hover {
+    background: #1b5e20;
+  }
+
+  button.donation:active {
+    transform: scale(0.95);
+  }
+
+  #status {
+    margin-top: 50px;
+    font-size: 24px;
+    color: #444;
+    min-height: 30px;
+  }
 </style>
 </head>
 <body>
 
-<h1 id="title">Loading donation options…</h1>
+<header>
+  <img src="mouse.jpeg" alt="Mouse Arts & Letters Club Logo">
+  <h1>Mouse Arts & Letters Club</h1>
+</header>
 
 <div id="buttons"></div>
 <div id="status"></div>
 
 <script>
 let donationOptions = [];
-let terminal; // Placeholder for Stripe Terminal reader
+const extraOptions = [1500]; // $15 hardcoded for now
 
-// Fetch donation options from backend
 async function fetchConfig() {
   try {
     const res = await fetch("/api/config");
     const data = await res.json();
-    donationOptions = data.options;
+    donationOptions = data.options.concat(extraOptions); // $15 added
     renderButtons();
   } catch (err) {
     document.getElementById("status").innerText = "Failed to load config";
@@ -51,7 +94,6 @@ async function fetchConfig() {
   }
 }
 
-// Render big donation buttons
 function renderButtons() {
   const container = document.getElementById("buttons");
   container.innerHTML = "";
@@ -59,20 +101,17 @@ function renderButtons() {
   donationOptions.forEach(amount => {
     const btn = document.createElement("button");
     btn.className = "donation";
-    btn.innerText = `$${(amount / 100).toFixed(2)}`;
+    btn.innerText = `$${(amount/100).toFixed(2)}`;
     btn.onclick = () => startDonation(amount);
     container.appendChild(btn);
   });
-
-  document.getElementById("title").innerText = "Tap to Donate";
 }
 
-// Placeholder donation flow
 async function startDonation(amount) {
-  document.getElementById("status").innerText = `Preparing $${(amount/100).toFixed(2)} donation…`;
+  const status = document.getElementById("status");
+  status.innerText = `Preparing $${(amount/100).toFixed(2)} donation…`;
 
   try {
-    // Call backend to create PaymentIntent
     const res = await fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -82,25 +121,20 @@ async function startDonation(amount) {
     const data = await res.json();
 
     if (data.error) {
-      document.getElementById("status").innerText = `Error: ${data.error}`;
+      status.innerText = `Error: ${data.error}`;
       return;
     }
 
-    // Placeholder: Stripe Terminal integration goes here
-    document.getElementById("status").innerText = `✅ Donation ready! Tap reader once Stripe secret key is added.`;
-
-    // TODO: terminal.collectPaymentMethod / terminal.processPayment
+    status.innerText = `✅ Donation ready! Tap reader once Stripe is set up.`;
   } catch (err) {
     console.error(err);
-    document.getElementById("status").innerText = "Error creating donation.";
+    status.innerText = "Error creating donation.";
   }
 }
 
 // Initialize kiosk
 fetchConfig();
-
-// Optional: refresh donation options every 30 seconds
-setInterval(fetchConfig, 30000);
+setInterval(fetchConfig, 30000); // refresh every 30s
 </script>
 
 </body>

@@ -5,73 +5,101 @@
 <title>Mouse Arts & Letters Club - Donate</title>
 <script src="https://js.stripe.com/terminal/v1/"></script>
 <style>
+  /* === Base Styles === */
   body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(to bottom, #fefefe, #e0f0ff);
+    background-color: #342316;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh;
+    color: #fff;
   }
 
+  /* === Header === */
   header {
     text-align: center;
     padding: 40px 20px 20px;
   }
 
   header img {
-    max-width: 150px;
-    margin-bottom: 20px;
+    max-width: 120px;
+    margin-bottom: 15px;
+    cursor: pointer;
   }
 
   header h1 {
-    font-size: 36px;
+    font-size: 32px;
     margin: 0;
-    color: #333;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 1px;
   }
 
+  /* === Donation Buttons === */
   #buttons {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     margin-top: 40px;
     gap: 20px;
+    width: 80%;
+    max-width: 300px;
   }
 
   button.donation {
     font-size: 28px;
-    padding: 25px 50px;
-    border-radius: 15px;
+    padding: 25px 0;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
     transition: transform 0.1s, background 0.2s;
-    background: #2e7d32;
-    color: white;
-    flex: 1 1 200px;
-    max-width: 250px;
+    background: #6b4b30;
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    font-weight: 600;
   }
 
   button.donation:hover {
-    background: #1b5e20;
+    background: #a67c52;
   }
 
   button.donation:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
+  /* === Status Message === */
   #status {
-    margin-top: 50px;
-    font-size: 24px;
-    color: #444;
+    margin-top: 40px;
+    font-size: 20px;
     min-height: 30px;
+    text-align: center;
+  }
+
+  /* === Confetti === */
+  .confetti {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: white;
+    top: 0;
+    pointer-events: none;
+    animation: fall 1s linear forwards;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(150px) rotate(360deg); opacity: 0; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="mouse.jpeg" alt="Mouse Arts & Letters Club Logo">
+  <img src="mouse.jpeg" alt="Mouse Arts & Letters Club Logo" id="logo">
   <h1>Mouse Arts & Letters Club</h1>
 </header>
 
@@ -80,13 +108,18 @@
 
 <script>
 let donationOptions = [];
-const extraOptions = [1500]; // $15 hardcoded for now
+const extraOptions = [1500]; // $15 button hardcoded
 
+// --- Admin variables ---
+let adminClickCount = 0;
+const adminClickThreshold = 5;
+
+// --- Fetch Config ---
 async function fetchConfig() {
   try {
     const res = await fetch("/api/config");
     const data = await res.json();
-    donationOptions = data.options.concat(extraOptions); // $15 added
+    donationOptions = data.options.concat(extraOptions);
     renderButtons();
   } catch (err) {
     document.getElementById("status").innerText = "Failed to load config";
@@ -94,6 +127,7 @@ async function fetchConfig() {
   }
 }
 
+// --- Render Buttons ---
 function renderButtons() {
   const container = document.getElementById("buttons");
   container.innerHTML = "";
@@ -107,9 +141,13 @@ function renderButtons() {
   });
 }
 
+// --- Donation Handler ---
 async function startDonation(amount) {
   const status = document.getElementById("status");
   status.innerText = `Preparing $${(amount/100).toFixed(2)} donation…`;
+
+  // Confetti animation
+  launchConfetti();
 
   try {
     const res = await fetch("/api/create-payment-intent", {
@@ -117,7 +155,6 @@ async function startDonation(amount) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount })
     });
-
     const data = await res.json();
 
     if (data.error) {
@@ -132,7 +169,63 @@ async function startDonation(amount) {
   }
 }
 
-// Initialize kiosk
+// --- Confetti Function ---
+function launchConfetti() {
+  for (let i = 0; i < 20; i++) {
+    const conf = document.createElement("div");
+    conf.className = "confetti";
+    conf.style.left = Math.random() * window.innerWidth + "px";
+    conf.style.background = "white";
+    conf.style.animationDuration = (0.8 + Math.random()*0.5) + "s";
+    document.body.appendChild(conf);
+    setTimeout(() => conf.remove(), 1200);
+  }
+}
+
+// --- Admin Interface ---
+function enableAdminPanel() {
+  const key = prompt("Enter admin key:");
+  if (!key) return;
+
+  const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
+  const newOption2 = parseInt(prompt("New amount for second button (in dollars, optional):"), 10);
+
+  fetch("/api/admin/update-config", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mode: newOption2 ? "multi" : "single",
+      option1: newOption1 * 100,
+      option2: newOption2 ? newOption2 * 100 : null,
+      adminKey: key
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Donation amounts updated!");
+        fetchConfig();
+      } else {
+        alert("Admin error: " + data.error);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Failed to update donation amounts.");
+    });
+}
+
+// --- Secret Logo Tap ---
+const logo = document.getElementById("logo");
+logo.addEventListener("click", () => {
+  adminClickCount++;
+  if (adminClickCount >= adminClickThreshold) {
+    adminClickCount = 0;
+    enableAdminPanel();
+  }
+});
+
+// --- Initialize ---
 fetchConfig();
 setInterval(fetchConfig, 30000); // refresh every 30s
 </script>

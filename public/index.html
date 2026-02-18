@@ -88,12 +88,13 @@
     background: white;
     top: 0;
     pointer-events: none;
-    animation: fall 1s linear forwards;
+    animation: fall 1.8s linear forwards;
+    opacity: 1;
   }
 
   @keyframes fall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(150px) rotate(360deg); opacity: 0; }
+    100% { transform: translateY(300px) rotate(720deg); opacity: 0.3; }
   }
 
   /* === Thank You Message === */
@@ -160,7 +161,7 @@ function renderButtons() {
 // --- Donation Handler ---
 async function startDonation(amount) {
   const status = document.getElementById("status");
-  status.innerText = `Preparing $${(amount/100).toFixed(2)} donation…`;
+  status.innerText = `Donation ready! Tap reader once Stripe is set up.`;
 
   // Confetti animation
   launchConfetti();
@@ -181,8 +182,6 @@ async function startDonation(amount) {
       status.innerText = `Error: ${data.error}`;
       return;
     }
-
-    status.innerText = `✅ Donation ready! Tap reader once Stripe is set up.`;
   } catch (err) {
     console.error(err);
     status.innerText = "Error creating donation.";
@@ -191,13 +190,16 @@ async function startDonation(amount) {
 
 // --- Confetti Function ---
 function launchConfetti() {
-  for (let i = 0; i < 20; i++) {
+  const count = 40; // more confetti
+  for (let i = 0; i < count; i++) {
     const conf = document.createElement("div");
     conf.className = "confetti";
     conf.style.left = Math.random() * window.innerWidth + "px";
-    conf.style.animationDuration = (0.8 + Math.random()*0.5) + "s";
+    const size = 4 + Math.random() * 4;
+    conf.style.width = conf.style.height = size + "px";
+    conf.style.animationDuration = (1.5 + Math.random() * 0.8) + "s";
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 1200);
+    setTimeout(() => conf.remove(), 2000);
   }
 }
 

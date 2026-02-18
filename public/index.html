@@ -209,13 +209,21 @@ function enableAdminPanel() {
     if (data.success) {
       const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
       const newOption2 = parseInt(prompt("New amount for second button (optional, in dollars):"), 10);
-      donationOptions = [newOption1 * 100];
-      if (newOption2) donationOptions.push(newOption2 * 100);
+
+      if (!newOption1) {
+        // User cancelled or invalid input — reset to defaults
+        donationOptions = [500, 1000, 1500];
+      } else {
+        donationOptions = [newOption1 * 100];
+        if (newOption2) donationOptions.push(newOption2 * 100);
+      }
+
       renderButtons();
     }
   })
   .catch(err => alert(err.message));
 }
+
 
 // Secret logo tap for admin
 document.getElementById("logo").addEventListener("click", () => {

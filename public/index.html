@@ -22,7 +22,8 @@
 
   header {
     text-align: center;
-    padding: 50px 20px 20px;
+    padding: 50px 20px 10px;
+    z-index: 2;
   }
 
   header img {
@@ -51,7 +52,8 @@
     gap: 20px;
     width: 80%;
     max-width: 300px;
-    margin-top: 40px;
+    margin-top: 60px;
+    z-index: 2;
   }
 
   button.donation {
@@ -60,7 +62,7 @@
     border-radius: 16px;
     border: none;
     cursor: pointer;
-    background: rgba(166, 156, 148, 0.8);
+    background: rgba(166, 156, 148, 0.85);
     color: #fff;
     width: 100%;
     text-align: center;
@@ -82,11 +84,12 @@
 
   /* --- Status Message --- */
   #status {
-    margin-top: 40px;
+    margin-top: 20px;
     font-size: 20px;
     min-height: 30px;
     text-align: center;
     opacity: 0.9;
+    z-index: 2;
   }
 
   /* --- Confetti --- */
@@ -99,18 +102,24 @@
     pointer-events: none;
     opacity: 1;
     border-radius: 50%;
-    animation: fall linear forwards;
+    animation: fall linear forwards, sway linear infinite;
   }
 
   @keyframes fall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+    0% { transform: translateY(0px); opacity: 1; }
+    100% { transform: translateY(700px); opacity: 0; }
+  }
+
+  @keyframes sway {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
   }
 
   /* --- Thank You Message --- */
   #thankyou {
     position: absolute;
-    top: 25%;
+    top: 200px; /* below logo but above buttons */
     left: 50%;
     transform: translateX(-50%);
     font-size: 36px;
@@ -120,6 +129,7 @@
     pointer-events: none;
     transition: opacity 0.8s ease-in-out;
     text-shadow: 1px 1px 8px rgba(0,0,0,0.6);
+    z-index: 3;
   }
 </style>
 </head>
@@ -171,11 +181,17 @@ function launchConfetti() {
     const conf = document.createElement("div");
     conf.className = "confetti";
     conf.style.left = Math.random() * window.innerWidth + "px";
-    const size = 4 + Math.random() * 4;
+    const size = 4 + Math.random() * 6;
     conf.style.width = conf.style.height = size + "px";
-    conf.style.animationDuration = (1.5 + Math.random() * 1.2) + "s";
+
+    // Random fall duration between 1.5–3.0s
+    conf.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
+
+    // Random sway offset
+    conf.style.animationDelay = (Math.random() * 0.5) + "s";
+
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 2500);
+    setTimeout(() => conf.remove(), 3000); // remove after animation
   }
 }
 

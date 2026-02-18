@@ -5,7 +5,7 @@
 <title>Mouse Arts & Letters Club - Donate</title>
 <script src="https://js.stripe.com/terminal/v1/"></script>
 <style>
-  /* === Base Styles === */
+  /* --- Base Styles --- */
   body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #342316;
@@ -19,68 +19,75 @@
     position: relative;
   }
 
-  /* === Header === */
   header {
     text-align: center;
-    padding: 40px 20px 20px;
+    padding: 50px 20px 20px;
   }
 
   header img {
     max-width: 120px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  header img:hover {
+    transform: scale(1.05);
   }
 
   header h1 {
     font-size: 32px;
-    margin: 0;
     font-weight: 600;
-    color: #fff;
+    margin: 0;
     letter-spacing: 1px;
+    color: #fff;
   }
 
-  /* === Donation Buttons === */
+  /* --- Donation Buttons --- */
   #buttons {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: 40px;
     gap: 20px;
     width: 80%;
     max-width: 300px;
+    margin-top: 40px;
   }
 
   button.donation {
     font-size: 28px;
-    padding: 25px 0;
-    border-radius: 12px;
+    padding: 22px 0;
+    border-radius: 14px;
     border: none;
     cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
     background: #a69c94;
     color: #fff;
     width: 100%;
     text-align: center;
     font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
   }
 
   button.donation:hover {
     background: #91897e;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   }
 
   button.donation:active {
     transform: scale(0.96);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
   }
 
-  /* === Status Message === */
+  /* --- Status Message --- */
   #status {
     margin-top: 40px;
     font-size: 20px;
     min-height: 30px;
     text-align: center;
+    opacity: 0.9;
   }
 
-  /* === Confetti === */
+  /* --- Confetti --- */
   .confetti {
     position: absolute;
     width: 6px;
@@ -94,10 +101,10 @@
 
   @keyframes fall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(300px) rotate(720deg); opacity: 0.3; }
+    100% { transform: translateY(350px) rotate(720deg); opacity: 0.35; }
   }
 
-  /* === Thank You Message === */
+  /* --- Thank You Message --- */
   #thankyou {
     position: absolute;
     top: 25%;
@@ -109,6 +116,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.8s ease-in-out;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
   }
 </style>
 </head>
@@ -124,25 +132,11 @@
 <div id="status"></div>
 
 <script>
-let donationOptions = [];
-const extraOptions = [1500]; // $15 button hardcoded
+let donationOptions = [500, 1000, 1500];
 
 // --- Admin variables ---
 let adminClickCount = 0;
 const adminClickThreshold = 5;
-
-// --- Fetch Config ---
-async function fetchConfig() {
-  try {
-    const res = await fetch("/api/config");
-    const data = await res.json();
-    donationOptions = data.options.concat(extraOptions);
-    renderButtons();
-  } catch (err) {
-    document.getElementById("status").innerText = "Failed to load config";
-    console.error(err);
-  }
-}
 
 // --- Render Buttons ---
 function renderButtons() {
@@ -159,38 +153,17 @@ function renderButtons() {
 }
 
 // --- Donation Handler ---
-async function startDonation(amount) {
+function startDonation(amount) {
   const status = document.getElementById("status");
   status.innerText = `Donation ready! Tap reader once Stripe is set up.`;
 
-  // Confetti animation
   launchConfetti();
-
-  // Show thank you animation
   showThankYou();
-
-  try {
-    const res = await fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount })
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-      status.innerText = `Error: ${data.error}`;
-      return;
-    }
-  } catch (err) {
-    console.error(err);
-    status.innerText = "Error creating donation.";
-  }
 }
 
 // --- Confetti Function ---
 function launchConfetti() {
-  const count = 40; // more confetti
+  const count = 50;
   for (let i = 0; i < count; i++) {
     const conf = document.createElement("div");
     conf.className = "confetti";
@@ -199,55 +172,30 @@ function launchConfetti() {
     conf.style.width = conf.style.height = size + "px";
     conf.style.animationDuration = (1.5 + Math.random() * 0.8) + "s";
     document.body.appendChild(conf);
-    setTimeout(() => conf.remove(), 2000);
+    setTimeout(() => conf.remove(), 2200);
   }
 }
 
 // --- Thank You Message ---
 function showThankYou() {
   const msg = document.getElementById("thankyou");
-  msg.style.opacity = "1"; // fade in
-  setTimeout(() => {
-    msg.style.opacity = "0"; // fade out after 2s
-  }, 2000);
+  msg.style.opacity = "1";
+  setTimeout(() => { msg.style.opacity = "0"; }, 2200);
 }
 
 // --- Admin Interface ---
 function enableAdminPanel() {
   const key = prompt("Enter admin key:");
   if (!key) return;
-
   const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
   const newOption2 = parseInt(prompt("New amount for second button (in dollars, optional):"), 10);
-
-  fetch("/api/admin/update-config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      mode: newOption2 ? "multi" : "single",
-      option1: newOption1 * 100,
-      option2: newOption2 ? newOption2 * 100 : null,
-      adminKey: key
-    })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("Donation amounts updated!");
-        fetchConfig();
-      } else {
-        alert("Admin error: " + data.error);
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Failed to update donation amounts.");
-    });
+  donationOptions = [newOption1*100];
+  if (newOption2) donationOptions.push(newOption2*100);
+  renderButtons();
 }
 
 // --- Secret Logo Tap ---
-const logo = document.getElementById("logo");
-logo.addEventListener("click", () => {
+document.getElementById("logo").addEventListener("click", () => {
   adminClickCount++;
   if (adminClickCount >= adminClickThreshold) {
     adminClickCount = 0;
@@ -256,8 +204,7 @@ logo.addEventListener("click", () => {
 });
 
 // --- Initialize ---
-fetchConfig();
-setInterval(fetchConfig, 30000); // refresh every 30s
+renderButtons();
 </script>
 
 </body>

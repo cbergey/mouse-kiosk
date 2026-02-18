@@ -16,6 +16,7 @@
     align-items: center;
     min-height: 100vh;
     color: #fff;
+    position: relative;
   }
 
   /* === Header === */
@@ -56,7 +57,7 @@
     border: none;
     cursor: pointer;
     transition: transform 0.1s, background 0.2s;
-    background: #6b4b30;
+    background: #a69c94;
     color: #fff;
     width: 100%;
     text-align: center;
@@ -64,7 +65,7 @@
   }
 
   button.donation:hover {
-    background: #a67c52;
+    background: #91897e;
   }
 
   button.donation:active {
@@ -94,15 +95,30 @@
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
     100% { transform: translateY(150px) rotate(360deg); opacity: 0; }
   }
+
+  /* === Thank You Message === */
+  #thankyou {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease-in-out;
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="mouse.jpeg" alt="Mouse Arts & Letters Club Logo" id="logo">
+  <img src="mouse.webp" alt="Mouse Arts & Letters Club Logo" id="logo">
   <h1>Mouse Arts & Letters Club</h1>
 </header>
 
+<div id="thankyou">Thank you!</div>
 <div id="buttons"></div>
 <div id="status"></div>
 
@@ -135,7 +151,7 @@ function renderButtons() {
   donationOptions.forEach(amount => {
     const btn = document.createElement("button");
     btn.className = "donation";
-    btn.innerText = `$${(amount/100).toFixed(2)}`;
+    btn.innerText = `Donate $${(amount/100).toFixed(0)}`;
     btn.onclick = () => startDonation(amount);
     container.appendChild(btn);
   });
@@ -149,12 +165,16 @@ async function startDonation(amount) {
   // Confetti animation
   launchConfetti();
 
+  // Show thank you animation
+  showThankYou();
+
   try {
     const res = await fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount })
     });
+
     const data = await res.json();
 
     if (data.error) {
@@ -175,11 +195,19 @@ function launchConfetti() {
     const conf = document.createElement("div");
     conf.className = "confetti";
     conf.style.left = Math.random() * window.innerWidth + "px";
-    conf.style.background = "white";
     conf.style.animationDuration = (0.8 + Math.random()*0.5) + "s";
     document.body.appendChild(conf);
     setTimeout(() => conf.remove(), 1200);
   }
+}
+
+// --- Thank You Message ---
+function showThankYou() {
+  const msg = document.getElementById("thankyou");
+  msg.style.opacity = "1"; // fade in
+  setTimeout(() => {
+    msg.style.opacity = "0"; // fade out after 2s
+  }, 2000);
 }
 
 // --- Admin Interface ---

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tap to Donate</title>
+<script src="https://js.stripe.com/terminal/v1/"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f6f8;
+    padding-top: 80px;
+  }
+  h1 { margin-bottom: 40px; }
+  button.donation {
+    font-size: 32px;
+    padding: 30px 60px;
+    margin: 20px;
+    border: none;
+    border-radius: 10px;
+    background: #2e7d32;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  button.donation:active { transform: scale(0.95); }
+  #status { margin-top: 40px; font-size: 24px; color: #333; }
+</style>
+</head>
+<body>
+
+<h1 id="title">Loading donation options…</h1>
+
+<div id="buttons"></div>
+<div id="status"></div>
+
+<script>
+let donationOptions = [];
+let terminal; // Placeholder for Stripe Terminal reader
+
+// Fetch donation options from backend
+async function fetchConfig() {
+  try {
+    const res = await fetch("/api/config");
+    const data = await res.json();
+    donationOptions = data.options;
+    renderButtons();
+  } catch (err) {
+    document.getElementById("status").innerText = "Failed to load config";
+    console.error(err);
+  }
+}
+
+// Render big donation buttons
+function renderButtons() {
+  const container = document.getElementById("buttons");
+  container.innerHTML = "";
+
+  donationOptions.forEach(amount => {
+    const btn = document.createElement("button");
+    btn.className = "donation";
+    btn.innerText = `$${(amount / 100).toFixed(2)}`;
+    btn.onclick = () => startDonation(amount);
+    container.appendChild(btn);
+  });
+
+  document.getElementById("title").innerText = "Tap to Donate";
+}
+
+// Placeholder donation flow
+async function startDonation(amount) {
+  document.getElementById("status").innerText = `Preparing $${(amount/100).toFixed(2)} donation…`;
+
+  try {
+    // Call backend to create PaymentIntent
+    const res = await fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById("status").innerText = `Error: ${data.error}`;
+      return;
+    }
+
+    // Placeholder: Stripe Terminal integration goes here
+    document.getElementById("status").innerText = `✅ Donation ready! Tap reader once Stripe secret key is added.`;
+
+    // TODO: terminal.collectPaymentMethod / terminal.processPayment
+  } catch (err) {
+    console.error(err);
+    document.getElementById("status").innerText = "Error creating donation.";
+  }
+}
+
+// Initialize kiosk
+fetchConfig();
+
+// Optional: refresh donation options every 30 seconds
+setInterval(fetchConfig, 30000);
+</script>
+
+</body>
+</html>

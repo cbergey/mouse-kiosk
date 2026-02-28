@@ -5,7 +5,6 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 const { v4: uuidv4 } = require("uuid");
-const rateLimit = require("express-rate-limit");
 
 const app = express();
 
@@ -16,18 +15,25 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Rate limiting — prevent abuse on payment endpoints
-const paymentLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20,
-  message: { error: "Too many requests. Please slow down." }
-});
+// ----------------------
+// Simple in-process rate limiter (no extra deps)
+// ----------------------
+function makeRateLimiter(windowMs, max) {
+  const hits = new Map();
+  setInterval(() => hits.clear(), windowMs).unref();
+  return (req, res, next) => {
+    const key = req.ip || "unknown";
+    const count = (hits.get(key) || 0) + 1;
+    hits.set(key, count);
+    if (count > max) {
+      return res.status(429).json({ error: "Too many requests. Please slow down." });
+    }
+    next();
+  };
+}
 
-const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-  message: { error: "Too many admin attempts. Try again later." }
-});
+const paymentLimiter = makeRateLimiter(60 * 1000, 20);
+const adminLimiter   = makeRateLimiter(15 * 60 * 1000, 10);
 
 // ----------------------
 // Config & Validation
@@ -68,14 +74,17 @@ async function initDB() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY DEFAULT 1,
-        mode VARCHAR(10) DEFAULT 'single',
+        mode VARCHAR(10) DEFAULT 'dual',
         option1 INTEGER DEFAULT 500,
         option2 INTEGER,
+        option3 INTEGER,
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      INSERT INTO settings (id, mode, option1, option2)
-      VALUES (1, 'dual', 500, 1000)
+      ALTER TABLE settings ADD COLUMN IF NOT EXISTS option3 INTEGER;
+
+      INSERT INTO settings (id, mode, option1, option2, option3)
+      VALUES (1, 'dual', 500, 1000, NULL)
       ON CONFLICT (id) DO NOTHING;
 
       CREATE TABLE IF NOT EXISTS donations (
@@ -125,10 +134,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/config", async (req, res) => {
   try {
     const settings = await getSettings();
-    const options =
-      settings.mode === "single"
-        ? [settings.option1]
-        : [settings.option1, settings.option2].filter(Boolean);
+    const options = [settings.option1, settings.option2, settings.option3].filter(Boolean);
     res.json({ mode: settings.mode, options });
   } catch (err) {
     console.error("config error:", err);
@@ -151,7 +157,7 @@ app.post("/api/create-payment-intent", paymentLimiter, async (req, res) => {
     return res.status(500).json({ error: "Could not load settings." });
   }
 
-  const allowedAmounts = [settings.option1, settings.option2].filter(Boolean);
+  const allowedAmounts = [settings.option1, settings.option2, settings.option3].filter(Boolean);
   if (!allowedAmounts.includes(amount)) {
     return res.status(400).json({ error: "Amount not in allowed options." });
   }
@@ -325,13 +331,13 @@ app.post("/api/check-admin", adminLimiter, (req, res) => {
 });
 
 app.post("/api/admin/update-config", adminLimiter, async (req, res) => {
-  const { mode, option1, option2, adminKey } = req.body;
+  const { mode, option1, option2, option3, adminKey } = req.body;
 
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (!["single", "dual"].includes(mode)) {
+  if (!["single", "dual", "triple"].includes(mode)) {
     return res.status(400).json({ error: "Invalid mode." });
   }
 
@@ -339,16 +345,25 @@ app.post("/api/admin/update-config", adminLimiter, async (req, res) => {
     return res.status(400).json({ error: "option1 must be a valid amount in cents." });
   }
 
-  if (mode === "dual" && !isValidAmount(option2)) {
-    return res.status(400).json({ error: "option2 must be a valid amount in cents for dual mode." });
+  if ((mode === "dual" || mode === "triple") && !isValidAmount(option2)) {
+    return res.status(400).json({ error: "option2 must be a valid amount in cents." });
+  }
+
+  if (mode === "triple" && !isValidAmount(option3)) {
+    return res.status(400).json({ error: "option3 must be a valid amount in cents for triple mode." });
   }
 
   try {
     await pool.query(
       `UPDATE settings
-       SET mode = $1, option1 = $2, option2 = $3, updated_at = NOW()
+       SET mode = $1, option1 = $2, option2 = $3, option3 = $4, updated_at = NOW()
        WHERE id = 1`,
-      [mode, option1, mode === "dual" ? option2 : null]
+      [
+        mode,
+        option1,
+        (mode === "dual" || mode === "triple") ? option2 : null,
+        mode === "triple" ? option3 : null
+      ]
     );
     res.json({ success: true });
   } catch (err) {

@@ -88,7 +88,7 @@
       object-fit: contain;
       display: block;
       /* Convert white PNG to --taupe-lt (#d4cdc8):
-         invert makes white→black, sepia+saturate+hue-rotate gets us to the taupe tone */
+         sepia+saturate+hue-rotate gets us to the taupe tone */
       filter: sepia(1) saturate(0.15) hue-rotate(10deg) brightness(0.88);
     }
 
@@ -842,7 +842,11 @@
       const res  = await apiFetch("/api/check-admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pwBuffer }) });
       const data = await res.json();
       pwBuffer = ""; updateDots();
-      if (data.success) { $("modal-pw").classList.remove("open"); openCfgModal(); }
+      if (data.success) {
+        adminKeyCache = pwBuffer; // store for subsequent admin API calls
+        $("modal-pw").classList.remove("open");
+        openCfgModal();
+      }
       else msg.textContent = "Incorrect PIN.";
     } catch { msg.textContent = "Connection error."; pwBuffer = ""; updateDots(); }
   }
@@ -867,7 +871,7 @@
     const el = $("admin-summary");
     if (!adminKeyCache) { el.textContent = ""; return; }
     try {
-      const res  = await apiFetch(`/api/admin/summary?adminKey=${encodeURIComponent(adminKeyCache)}`);
+      const res  = await apiFetch(`/api/admin/summary?adminPassword=${encodeURIComponent(adminKeyCache)}`);
       const data = await res.json();
       if (!data.error) el.textContent = `Today: ${data.today_count} gift(s)  ·  Total: ${bucks(parseInt(data.total_cents))}`;
     } catch {}
@@ -894,14 +898,14 @@
     if ((mode === "dual" || mode === "triple") && (!opt2 || opt2 < 1)) { msg.textContent = "Option 2 required."; return; }
     if (mode === "triple" && (!opt3 || opt3 < 1)) { msg.textContent = "Option 3 required."; return; }
 
-    if (!adminKeyCache) { adminKeyCache = prompt("Enter admin key:"); if (!adminKeyCache) return; }
+    if (!adminKeyCache) { msg.textContent = "Session expired. Please re-enter your PIN."; return; }
 
     msg.textContent = "Saving\u2026";
 
     try {
       const res  = await apiFetch("/api/admin/update-config", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, option1: cents(opt1), option2: opt2 ? cents(opt2) : null, option3: opt3 ? cents(opt3) : null, adminKey: adminKeyCache })
+        body: JSON.stringify({ mode, option1: cents(opt1), option2: opt2 ? cents(opt2) : null, option3: opt3 ? cents(opt3) : null, adminPassword: adminKeyCache })
       });
       const data = await res.json();
       if (!res.ok) { msg.textContent = data.error || "Failed to save."; return; }

@@ -331,9 +331,9 @@ app.post("/api/check-admin", adminLimiter, (req, res) => {
 });
 
 app.post("/api/admin/update-config", adminLimiter, async (req, res) => {
-  const { mode, option1, option2, option3, adminKey } = req.body;
+  const { mode, option1, option2, option3, adminPassword } = req.body;
 
-  if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+  if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -374,8 +374,8 @@ app.post("/api/admin/update-config", adminLimiter, async (req, res) => {
 
 // Simple donations summary for admin
 app.get("/api/admin/summary", adminLimiter, async (req, res) => {
-  const { adminKey } = req.query;
-  if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+  const { adminPassword } = req.query;
+  if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 

@@ -84,7 +84,7 @@ async function initDB() {
       ALTER TABLE settings ADD COLUMN IF NOT EXISTS option3 INTEGER;
 
       INSERT INTO settings (id, mode, option1, option2, option3)
-      VALUES (1, 'dual', 500, 1000, NULL)
+      VALUES (1, 'triple', 500, 1000, 1500)
       ON CONFLICT (id) DO NOTHING;
 
       CREATE TABLE IF NOT EXISTS donations (

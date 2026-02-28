@@ -87,8 +87,6 @@
       height: 110px;
       object-fit: contain;
       display: block;
-      /* Convert white PNG to --taupe-lt (#d4cdc8):
-         sepia+saturate+hue-rotate gets us to the taupe tone */
       filter: sepia(1) saturate(0.15) hue-rotate(10deg) brightness(0.88);
     }
 
@@ -841,9 +839,9 @@
     try {
       const res  = await apiFetch("/api/check-admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pwBuffer }) });
       const data = await res.json();
+      adminKeyCache = pwBuffer; // capture before clearing
       pwBuffer = ""; updateDots();
       if (data.success) {
-        adminKeyCache = pwBuffer; // store for subsequent admin API calls
         $("modal-pw").classList.remove("open");
         openCfgModal();
       }

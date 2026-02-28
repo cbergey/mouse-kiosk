@@ -19,7 +19,7 @@
       --btn-bg:   #c8c0b8;
       --ink:      #1e1510;
       --muted:    rgba(180,170,160,0.5);
-      --radius:   16px;
+      --radius:   18px;
     }
 
     html, body {
@@ -49,8 +49,7 @@
       align-items: center;
       justify-content: center;
       z-index: 1;
-      padding: 32px 28px;
-      gap: 28px;
+      padding: 28px 24px;
     }
 
     .screen {
@@ -58,7 +57,7 @@
       flex-direction: column;
       align-items: center;
       width: 100%;
-      max-width: 400px;
+      max-width: 480px;
     }
 
     .screen.active {
@@ -71,59 +70,63 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Logo */
+    /* ── Logo ── */
     .logo-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 32px;
+      gap: 16px;
+      margin-bottom: 36px;
       user-select: none;
       cursor: default;
     }
 
+    /* White PNG tinted to match text color using CSS filter */
     .logo-img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
       display: block;
+      /* Convert white PNG to --taupe-lt (#d4cdc8):
+         invert makes white→black, sepia+saturate+hue-rotate gets us to the taupe tone */
+      filter: invert(1) sepia(1) saturate(0.15) hue-rotate(10deg) brightness(0.88);
     }
 
     .logo-img.tapped { animation: blink 0.2s ease; }
 
     @keyframes blink {
       0%   { opacity: 1; }
-      40%  { opacity: 0.5; }
+      40%  { opacity: 0.45; }
       100% { opacity: 1; }
     }
 
     .logo-name {
       font-family: 'Libre Baskerville', serif;
-      font-size: 20px;
+      font-size: 28px;
       font-weight: 700;
       letter-spacing: 0.01em;
       color: var(--taupe-lt);
+      text-align: center;
     }
 
-    /* Donation Buttons */
+    /* ── Donation Buttons ── */
     .donate-options {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       width: 100%;
     }
 
     .donate-btn {
       width: 100%;
-      padding: 22px 28px;
+      padding: 28px 36px;
       background: var(--btn-bg);
       border: none;
       border-radius: var(--radius);
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       -webkit-tap-highlight-color: transparent;
       box-shadow: 0 2px 12px rgba(0,0,0,0.25);
       transition: transform 0.1s ease, box-shadow 0.1s ease;
@@ -134,23 +137,15 @@
       box-shadow: 0 1px 6px rgba(0,0,0,0.2);
     }
 
-    .donate-btn-amount {
+    .donate-btn-label {
       font-family: 'Libre Baskerville', serif;
-      font-size: 36px;
+      font-size: 42px;
       font-weight: 700;
       color: var(--ink);
       line-height: 1;
     }
 
-    .donate-btn-cta {
-      font-family: 'Almarai', sans-serif;
-      font-size: 13px;
-      font-weight: 300;
-      color: var(--taupe-dk);
-      letter-spacing: 0.03em;
-    }
-
-    /* Processing */
+    /* ── Processing ── */
     .proc-wrap {
       display: flex;
       flex-direction: column;
@@ -160,9 +155,9 @@
 
     .reader-graphic {
       position: relative;
-      width: 80px;
-      height: 80px;
-      margin-bottom: 24px;
+      width: 90px;
+      height: 90px;
+      margin-bottom: 28px;
     }
 
     .reader-ring {
@@ -182,7 +177,7 @@
     }
 
     .reader-spin-2 {
-      inset: 10px;
+      inset: 11px;
       border-top-color: rgba(180,170,160,0.35);
       animation-duration: 1.6s;
       animation-direction: reverse;
@@ -199,8 +194,8 @@
     }
 
     .reader-icon svg {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
       stroke: var(--taupe);
       stroke-width: 1.5;
       fill: none;
@@ -208,22 +203,22 @@
 
     .proc-title {
       font-family: 'Libre Baskerville', serif;
-      font-size: 24px;
+      font-size: 28px;
       color: var(--taupe-lt);
       margin-bottom: 6px;
     }
 
     .proc-amount {
       font-family: 'Libre Baskerville', serif;
-      font-size: 48px;
+      font-size: 56px;
       font-weight: 700;
       color: var(--taupe-lt);
       line-height: 1;
-      margin: 8px 0 10px;
+      margin: 10px 0 12px;
     }
 
     .proc-sub {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 300;
       color: var(--muted);
     }
@@ -233,7 +228,7 @@
       height: 1.5px;
       background: rgba(180,170,160,0.15);
       border-radius: 1px;
-      margin: 28px auto 0;
+      margin: 32px auto 0;
       overflow: hidden;
     }
 
@@ -246,20 +241,20 @@
     }
 
     .cancel-btn {
-      margin-top: 18px;
+      margin-top: 20px;
       background: none;
       border: 1px solid rgba(180,170,160,0.2);
       color: rgba(180,170,160,0.4);
-      padding: 9px 24px;
+      padding: 10px 28px;
       border-radius: 30px;
       font-family: 'Almarai', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.15s;
     }
     .cancel-btn:active { border-color: rgba(180,170,160,0.4); color: rgba(180,170,160,0.7); }
 
-    /* Success */
+    /* ── Success ── */
     .success-wrap {
       display: flex;
       flex-direction: column;
@@ -268,20 +263,20 @@
     }
 
     .success-mark {
-      width: 72px;
-      height: 72px;
+      width: 82px;
+      height: 82px;
       border-radius: 50%;
       border: 1.5px solid rgba(180,170,160,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
       animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .success-mark svg {
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
       stroke: var(--taupe);
       stroke-width: 2;
       fill: none;
@@ -294,20 +289,20 @@
 
     .success-title {
       font-family: 'Libre Baskerville', serif;
-      font-size: 36px;
+      font-size: 42px;
       color: var(--taupe-lt);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .success-amount {
       font-family: 'Libre Baskerville', serif;
-      font-size: 52px;
+      font-size: 60px;
       font-weight: 700;
       color: var(--taupe-lt);
       line-height: 1;
     }
 
-    /* Error */
+    /* ── Error ── */
     .error-wrap {
       display: flex;
       flex-direction: column;
@@ -316,29 +311,35 @@
     }
 
     .error-mark {
-      width: 64px;
-      height: 64px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       border: 1.5px solid rgba(180,170,160,0.25);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
-    .error-mark svg { width: 24px; height: 24px; stroke: rgba(180,170,160,0.5); stroke-width: 1.5; fill: none; }
+    .error-mark svg { width: 26px; height: 26px; stroke: rgba(180,170,160,0.5); stroke-width: 1.5; fill: none; }
 
-    .error-title { font-family: 'Libre Baskerville', serif; font-size: 26px; color: var(--taupe-lt); margin-bottom: 8px; }
-    .error-msg   { font-size: 14px; font-weight: 300; color: var(--muted); max-width: 260px; line-height: 1.6; margin-bottom: 26px; }
+    .error-title { font-family: 'Libre Baskerville', serif; font-size: 30px; color: var(--taupe-lt); margin-bottom: 10px; }
+    .error-msg   { font-size: 16px; font-weight: 300; color: var(--muted); max-width: 300px; line-height: 1.6; margin-bottom: 32px; }
+
+    .error-actions {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
 
     .retry-btn {
       background: var(--btn-bg);
       color: var(--ink);
       border: none;
-      padding: 15px 40px;
+      padding: 16px 44px;
       border-radius: 30px;
       font-family: 'Almarai', sans-serif;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 3px 16px rgba(0,0,0,0.25);
@@ -346,7 +347,20 @@
     }
     .retry-btn:active { transform: scale(0.97); }
 
-    /* Confetti */
+    .cancel-error-btn {
+      background: none;
+      border: 1px solid rgba(180,170,160,0.25);
+      color: rgba(180,170,160,0.5);
+      padding: 16px 28px;
+      border-radius: 30px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .cancel-error-btn:active { border-color: rgba(180,170,160,0.5); color: rgba(180,170,160,0.8); }
+
+    /* ── Confetti ── */
     .confetti-piece {
       position: fixed;
       top: -12px;
@@ -361,7 +375,7 @@
       100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
     }
 
-    /* Admin modals */
+    /* ── Admin modals ── */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -493,7 +507,7 @@
       <div class="logo-name">Mouse Arts &amp; Letters Club</div>
     </div>
     <div class="donate-options" id="donate-options">
-      <div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Loading&hellip;</div>
+      <div style="text-align:center;padding:20px;color:var(--muted);font-size:15px">Loading&hellip;</div>
     </div>
   </div>
 
@@ -510,7 +524,7 @@
       </div>
       <div class="proc-title">Present your card</div>
       <div class="proc-amount" id="proc-amount">$10</div>
-      <div class="proc-sub" id="proc-sub">Tap, insert, or swipe on the reader</div>
+      <div class="proc-sub">Tap, insert, or swipe on the reader</div>
       <div class="timeout-track"><div class="timeout-fill" id="timeout-fill"></div></div>
       <button class="cancel-btn" id="cancel-btn">Cancel</button>
     </div>
@@ -524,7 +538,7 @@
       </div>
       <div class="success-title">Thank you.</div>
       <div class="success-amount" id="success-amount">$10</div>
-      <div class="timeout-track" style="margin-top:32px">
+      <div class="timeout-track" style="margin-top:36px">
         <div class="timeout-fill" id="success-fill"></div>
       </div>
     </div>
@@ -536,9 +550,12 @@
       <div class="error-mark">
         <svg viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/><circle cx="12" cy="12" r="10"/></svg>
       </div>
-      <div class="error-title" id="error-title">Something went wrong</div>
-      <div class="error-msg" id="error-msg">We couldn't process your donation. Please try again.</div>
-      <button class="retry-btn" id="retry-btn">Try Again</button>
+      <div class="error-title" id="error-title">Payment Unsuccessful</div>
+      <div class="error-msg" id="error-msg">Something went wrong. Please try again.</div>
+      <div class="error-actions">
+        <button class="retry-btn" id="retry-btn">Try Again</button>
+        <button class="cancel-error-btn" id="cancel-error-btn">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -610,6 +627,7 @@
 <script>
   const LOGO_TAPS  = 5;
   const TIMEOUT_MS = 60000;
+  const RETRY_WAIT = 10000; // 10s quiet wait between retries
   const RESET_MS   = 5000;
   const MAX_RETRY  = 2;
   const CF_COLORS  = ['#b5aaa0','#8a8078','#d4cdc8','#6b5a4e','#c8c0b8'];
@@ -661,7 +679,7 @@
     if (m.includes("network") || m.includes("failed to fetch")) return "A network error occurred. Please try again.";
     if (m.includes("timeout") || m.includes("timed out"))      return "The reader timed out. Please try again.";
     if (m.includes("disconnect") || m.includes("no reader"))   return "The card reader isn't responding. Please ensure it's connected.";
-    return "Something went wrong. Please try again or ask a staff member.";
+    return "Something went wrong. Please try again or ask a Mouse member for help.";
   }
 
   async function init() { await loadConfig(); await setupTerminal(); }
@@ -677,13 +695,12 @@
   function renderButtons(options) {
     const wrap = $("donate-options");
     if (!options || !options.length) {
-      wrap.innerHTML = `<p style="text-align:center;color:var(--muted);font-size:13px;padding:16px 0">Unable to load. Please check the connection.</p>`;
+      wrap.innerHTML = `<p style="text-align:center;color:var(--muted);font-size:15px;padding:20px 0">Unable to load. Please check the connection.</p>`;
       return;
     }
     wrap.innerHTML = options.map(opt => `
       <button class="donate-btn" onclick="handleDonate(${opt})">
-        <div class="donate-btn-amount">${bucks(opt)}</div>
-        <div class="donate-btn-cta">Tap to donate</div>
+        <div class="donate-btn-label">Donate ${bucks(opt)}</div>
       </button>
     `).join("");
   }
@@ -698,7 +715,7 @@
         },
         onUnexpectedReaderDisconnect: () => {
           if ($("screen-processing").classList.contains("active"))
-            showError("Reader Disconnected", "The card reader disconnected. Please try again.");
+            showError("Reader Disconnected", "The card reader disconnected. Please try again or ask a Mouse member for help.");
         }
       });
       const found = await terminal.discoverReaders({ simulated: false });
@@ -711,7 +728,6 @@
   async function startPaymentFlow(amount) {
     showScreen("screen-processing");
     $("proc-amount").textContent = bucks(amount);
-    $("proc-sub").textContent    = "Tap, insert, or swipe on the reader";
     currentIntentId = null;
     startBar("timeout-fill", TIMEOUT_MS, handleTimeout);
 
@@ -746,9 +762,12 @@
       if (err.name === "AbortError" || err.message?.includes("canceled")) { goBack(); return; }
       if (retryCount < MAX_RETRY) {
         retryCount++;
-        $("proc-sub").textContent = `Trying again\u2026 (${retryCount + 1} of ${MAX_RETRY + 1})`;
-        await new Promise(r => setTimeout(r, 1800));
-        await startPaymentFlow(amount);
+        // Silently wait 10s then retry — no messaging shown to user
+        await new Promise(r => setTimeout(r, RETRY_WAIT));
+        // Only proceed if still on processing screen (user didn't cancel)
+        if ($("screen-processing").classList.contains("active")) {
+          await startPaymentFlow(amount);
+        }
       } else {
         showError("Payment Unsuccessful", friendlyError(err.message));
       }
@@ -772,13 +791,15 @@
   function showError(title, msg) { $("error-title").textContent = title; $("error-msg").textContent = msg; showScreen("screen-error"); }
   function goBack() { clearTimers(); currentIntentId = null; retryCount = 0; showScreen("screen-donate"); }
 
-  $("cancel-btn").addEventListener("click", async () => {
+  async function cancelPayment() {
     clearTimers();
     if (terminal) { try { await terminal.cancelCollectPaymentMethod(); } catch {} }
     if (currentIntentId) apiFetch("/api/cancel-payment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intentId: currentIntentId }) }).catch(() => {});
     goBack();
-  });
+  }
 
+  $("cancel-btn").addEventListener("click", cancelPayment);
+  $("cancel-error-btn").addEventListener("click", goBack);
   $("retry-btn").addEventListener("click", () => { if (currentAmount) { retryCount = 0; startPaymentFlow(currentAmount); } else goBack(); });
 
   function launchConfetti() {

@@ -1,242 +1,897 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Mouse Arts & Letters Club - Donate</title>
-<script src="https://js.stripe.com/terminal/v1/"></script>
-<style>
-  body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #342316;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    color: #fff;
-    position: relative;
-    overflow-x: hidden;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mouse Arts &amp; Letters Club — Donate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Almarai:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://js.stripe.com/terminal/v1/"></script>
 
-  header {
-    text-align: center;
-    padding: 50px 20px 10px;
-    z-index: 2;
-  }
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  header img {
-    max-width: 120px;
-    margin-bottom: 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
+    :root {
+      --bg:       #342316;
+      --taupe:    #b5aaa0;
+      --taupe-dk: #8a8078;
+      --taupe-lt: #d4cdc8;
+      --btn-bg:   #c8c0b8;
+      --ink:      #1e1510;
+      --muted:    rgba(180,170,160,0.5);
+      --radius:   16px;
+    }
 
-  header img:hover { transform: scale(1.05); }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      background: var(--bg);
+      font-family: 'Almarai', sans-serif;
+      color: var(--taupe-lt);
+      -webkit-font-smoothing: antialiased;
+    }
 
-  header h1 {
-    font-size: 32px;
-    font-weight: 600;
-    margin: 0;
-    letter-spacing: 1px;
-    color: #fff;
-  }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(15,8,3,0.5) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  #buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 80%;
-    max-width: 300px;
-    margin-top: 40px;
-    z-index: 2;
-  }
+    #app {
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding: 32px 28px;
+      gap: 28px;
+    }
 
-  button.donation {
-    font-size: 28px;
-    padding: 20px 0;
-    border-radius: 16px;
-    border: none;
-    cursor: pointer;
-    background: rgba(166, 156, 148, 0.85);
-    color: #fff;
-    width: 100%;
-    text-align: center;
-    font-weight: 600;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-    backdrop-filter: blur(6px);
-    transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
-  }
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+    }
 
-  button.donation:hover {
-    background: rgba(166, 156, 148, 0.95);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
-  }
+    .screen.active {
+      display: flex;
+      animation: up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
 
-  button.donation:active {
-    transform: scale(0.96);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.35);
-  }
+    @keyframes up {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-  #status {
-    margin-top: 20px;
-    font-size: 20px;
-    min-height: 30px;
-    text-align: center;
-    opacity: 0.9;
-    z-index: 2;
-  }
+    /* Logo */
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      user-select: none;
+      cursor: default;
+    }
 
-  .confetti {
-    position: absolute;
-    background: white;
-    top: -10px;
-    pointer-events: none;
-    animation: fall linear forwards;
-  }
+    .logo-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
 
-  @keyframes fall {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(700px); opacity: 0; }
-  }
+    .logo-img.tapped { animation: blink 0.2s ease; }
 
-  #thankyou {
-    position: fixed;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 36px;
-    font-weight: 700;
-    color: #fff;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.8s ease-in-out;
-    text-shadow: 1px 1px 8px rgba(0,0,0,0.6);
-    z-index: 3;
-  }
-</style>
+    @keyframes blink {
+      0%   { opacity: 1; }
+      40%  { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .logo-name {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--taupe-lt);
+    }
+
+    /* Donation Buttons */
+    .donate-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .donate-btn {
+      width: 100%;
+      padding: 22px 28px;
+      background: var(--btn-bg);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .donate-btn:active {
+      transform: scale(0.975);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+    }
+
+    .donate-btn-amount {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .donate-btn-cta {
+      font-family: 'Almarai', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--taupe-dk);
+      letter-spacing: 0.03em;
+    }
+
+    /* Processing */
+    .proc-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .reader-graphic {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+    }
+
+    .reader-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(180,170,160,0.15);
+    }
+
+    .reader-spin {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      border-top-color: var(--taupe);
+      animation: spin 1s linear infinite;
+    }
+
+    .reader-spin-2 {
+      inset: 10px;
+      border-top-color: rgba(180,170,160,0.35);
+      animation-duration: 1.6s;
+      animation-direction: reverse;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .reader-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .reader-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--taupe);
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .proc-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 24px;
+      color: var(--taupe-lt);
+      margin-bottom: 6px;
+    }
+
+    .proc-amount {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--taupe-lt);
+      line-height: 1;
+      margin: 8px 0 10px;
+    }
+
+    .proc-sub {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .timeout-track {
+      width: 120px;
+      height: 1.5px;
+      background: rgba(180,170,160,0.15);
+      border-radius: 1px;
+      margin: 28px auto 0;
+      overflow: hidden;
+    }
+
+    .timeout-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--taupe);
+      border-radius: 1px;
+      transition: width linear;
+    }
+
+    .cancel-btn {
+      margin-top: 18px;
+      background: none;
+      border: 1px solid rgba(180,170,160,0.2);
+      color: rgba(180,170,160,0.4);
+      padding: 9px 24px;
+      border-radius: 30px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .cancel-btn:active { border-color: rgba(180,170,160,0.4); color: rgba(180,170,160,0.7); }
+
+    /* Success */
+    .success-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .success-mark {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(180,170,160,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .success-mark svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--taupe);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .success-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 36px;
+      color: var(--taupe-lt);
+      margin-bottom: 6px;
+    }
+
+    .success-amount {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 52px;
+      font-weight: 700;
+      color: var(--taupe-lt);
+      line-height: 1;
+    }
+
+    /* Error */
+    .error-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .error-mark {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(180,170,160,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .error-mark svg { width: 24px; height: 24px; stroke: rgba(180,170,160,0.5); stroke-width: 1.5; fill: none; }
+
+    .error-title { font-family: 'Libre Baskerville', serif; font-size: 26px; color: var(--taupe-lt); margin-bottom: 8px; }
+    .error-msg   { font-size: 14px; font-weight: 300; color: var(--muted); max-width: 260px; line-height: 1.6; margin-bottom: 26px; }
+
+    .retry-btn {
+      background: var(--btn-bg);
+      color: var(--ink);
+      border: none;
+      padding: 15px 40px;
+      border-radius: 30px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.25);
+      transition: transform 0.1s;
+    }
+    .retry-btn:active { transform: scale(0.97); }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      top: -12px;
+      pointer-events: none;
+      border-radius: 2px;
+      animation: cfAll linear forwards;
+      z-index: 50;
+    }
+    @keyframes cfAll {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      85%  { opacity: 1; }
+      100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+    }
+
+    /* Admin modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,8,3,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: #2a1e14;
+      border: 1px solid rgba(180,170,160,0.12);
+      border-radius: var(--radius);
+      padding: 30px 26px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: up 0.3s ease;
+    }
+
+    .modal h2 { font-family: 'Libre Baskerville', serif; font-size: 20px; color: var(--taupe-lt); margin-bottom: 4px; }
+    .modal-sub { font-size: 13px; font-weight: 300; color: var(--muted); margin-bottom: 20px; }
+
+    .pw-dots { display: flex; gap: 12px; justify-content: center; margin-bottom: 18px; }
+
+    .pw-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(180,170,160,0.25);
+      transition: all 0.15s;
+    }
+    .pw-dot.filled { background: var(--taupe); border-color: var(--taupe); }
+
+    .pw-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+    .pw-key {
+      padding: 14px;
+      background: rgba(180,170,160,0.08);
+      border: 1px solid rgba(180,170,160,0.1);
+      border-radius: 10px;
+      font-size: 17px;
+      font-family: 'Almarai', sans-serif;
+      color: var(--taupe-lt);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pw-key:active { background: rgba(180,170,160,0.18); }
+    .pw-key.light  { font-size: 12px; color: var(--muted); }
+
+    .pw-msg { font-size: 12px; text-align: center; margin-top: 10px; min-height: 16px; color: #c07060; }
+
+    .form-group { margin-bottom: 12px; }
+
+    .form-group label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--taupe-dk);
+      margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid rgba(180,170,160,0.15);
+      border-radius: 9px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 15px;
+      background: rgba(180,170,160,0.06);
+      color: var(--taupe-lt);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--taupe-dk); }
+    .form-group select option { background: #2a1e14; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--taupe);
+      color: var(--ink);
+      border: none;
+      padding: 13px;
+      border-radius: 9px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary:active { background: var(--taupe-dk); }
+
+    .btn-ghost {
+      flex: 1;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(180,170,160,0.15);
+      padding: 13px;
+      border-radius: 9px;
+      font-family: 'Almarai', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-ghost:active { background: rgba(180,170,160,0.05); }
+
+    .cfg-msg { font-size: 12px; text-align: center; margin-top: 8px; min-height: 16px; color: #c07060; }
+    .cfg-msg.ok { color: #7aaa7a; }
+
+    .summary-bar { font-size: 12px; font-weight: 300; color: var(--muted); text-align: center; margin-bottom: 14px; min-height: 16px; }
+  </style>
 </head>
 <body>
+<div id="app">
 
-<header>
-  <img src="mouse.webp" alt="Mouse Arts & Letters Club Logo" id="logo">
-  <h1>Mouse Arts & Letters Club</h1>
-</header>
+  <!-- DONATE -->
+  <div class="screen active" id="screen-donate">
+    <div class="logo-wrap" id="logo-tap-target">
+      <img class="logo-img" id="logo-img" src="mouse.webp" alt="Mouse Arts &amp; Letters Club" />
+      <div class="logo-name">Mouse Arts &amp; Letters Club</div>
+    </div>
+    <div class="donate-options" id="donate-options">
+      <div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Loading&hellip;</div>
+    </div>
+  </div>
 
-<div id="buttons"></div>
-<div id="status"></div>
-<div id="thankyou">Thank you!</div>
+  <!-- PROCESSING -->
+  <div class="screen" id="screen-processing">
+    <div class="proc-wrap">
+      <div class="reader-graphic">
+        <div class="reader-ring"></div>
+        <div class="reader-spin"></div>
+        <div class="reader-spin reader-spin-2"></div>
+        <div class="reader-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+      </div>
+      <div class="proc-title">Present your card</div>
+      <div class="proc-amount" id="proc-amount">$10</div>
+      <div class="proc-sub" id="proc-sub">Tap, insert, or swipe on the reader</div>
+      <div class="timeout-track"><div class="timeout-fill" id="timeout-fill"></div></div>
+      <button class="cancel-btn" id="cancel-btn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div class="success-wrap">
+      <div class="success-mark">
+        <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+      </div>
+      <div class="success-title">Thank you.</div>
+      <div class="success-amount" id="success-amount">$10</div>
+      <div class="timeout-track" style="margin-top:32px">
+        <div class="timeout-fill" id="success-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="screen" id="screen-error">
+    <div class="error-wrap">
+      <div class="error-mark">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/><circle cx="12" cy="12" r="10"/></svg>
+      </div>
+      <div class="error-title" id="error-title">Something went wrong</div>
+      <div class="error-msg" id="error-msg">We couldn't process your donation. Please try again.</div>
+      <button class="retry-btn" id="retry-btn">Try Again</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- PIN MODAL -->
+<div class="modal-backdrop" id="modal-pw">
+  <div class="modal">
+    <h2>Staff Access</h2>
+    <p class="modal-sub">Enter your PIN</p>
+    <div class="pw-dots">
+      <div class="pw-dot" id="dot-0"></div>
+      <div class="pw-dot" id="dot-1"></div>
+      <div class="pw-dot" id="dot-2"></div>
+      <div class="pw-dot" id="dot-3"></div>
+    </div>
+    <div class="pw-keypad">
+      <button class="pw-key" data-k="1">1</button>
+      <button class="pw-key" data-k="2">2</button>
+      <button class="pw-key" data-k="3">3</button>
+      <button class="pw-key" data-k="4">4</button>
+      <button class="pw-key" data-k="5">5</button>
+      <button class="pw-key" data-k="6">6</button>
+      <button class="pw-key" data-k="7">7</button>
+      <button class="pw-key" data-k="8">8</button>
+      <button class="pw-key" data-k="9">9</button>
+      <button class="pw-key light" data-k="back">&#9003;</button>
+      <button class="pw-key" data-k="0">0</button>
+      <button class="pw-key light" data-k="cancel">Cancel</button>
+    </div>
+    <div class="pw-msg" id="pw-msg"></div>
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="modal-backdrop" id="modal-cfg">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="modal-sub">Update donation options</p>
+    <div class="summary-bar" id="admin-summary"></div>
+    <div class="form-group">
+      <label>Buttons</label>
+      <select id="cfg-mode">
+        <option value="single">One</option>
+        <option value="dual">Two</option>
+        <option value="triple">Three</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Option 1 ($)</label>
+      <input type="number" id="cfg-opt1" placeholder="e.g. 10" min="1" max="10000">
+    </div>
+    <div class="form-group" id="opt2-row">
+      <label>Option 2 ($)</label>
+      <input type="number" id="cfg-opt2" placeholder="e.g. 25" min="1" max="10000">
+    </div>
+    <div class="form-group" id="opt3-row">
+      <label>Option 3 ($)</label>
+      <input type="number" id="cfg-opt3" placeholder="e.g. 50" min="1" max="10000">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cfg-cancel">Cancel</button>
+      <button class="btn-primary" id="cfg-save">Save</button>
+    </div>
+    <div class="cfg-msg" id="cfg-msg"></div>
+  </div>
+</div>
 
 <script>
-let donationOptions = [500, 1000, 1500]; // default donation amounts
-let adminClickCount = 0;
-const adminClickThreshold = 5;
+  const LOGO_TAPS  = 5;
+  const TIMEOUT_MS = 60000;
+  const RESET_MS   = 5000;
+  const MAX_RETRY  = 2;
+  const CF_COLORS  = ['#b5aaa0','#8a8078','#d4cdc8','#6b5a4e','#c8c0b8'];
 
-// Render donation buttons
-function renderButtons() {
-  const container = document.getElementById("buttons");
-  container.innerHTML = "";
-  donationOptions.forEach(amount => {
-    const btn = document.createElement("button");
-    btn.className = "donation";
-    btn.innerText = `Donate $${(amount / 100).toFixed(0)}`;
-    btn.onclick = () => startDonation(amount);
-    container.appendChild(btn);
-  });
-}
+  let currentAmount   = 0;
+  let currentIntentId = null;
+  let terminal        = null;
+  let tapCount        = 0;
+  let tapTimer        = null;
+  let timeoutHandle   = null;
+  let retryCount      = 0;
+  let adminKeyCache   = null;
+  let pwBuffer        = "";
 
-// Handle donation click
-function startDonation(amount) {
-  const status = document.getElementById("status");
-  status.innerText = `Donation ready! Tap reader once Stripe is set up.`;
-  launchConfetti();
-  showThankYou();
-}
+  const cents = n => Math.round(n * 100);
+  const bucks = c => "$" + (c / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const $     = id => document.getElementById(id);
 
-// Confetti function (square confetti)
-function launchConfetti() {
-  const count = 80;
-  for (let i = 0; i < count; i++) {
-    const conf = document.createElement("div");
-    conf.className = "confetti";
-    const size = 4 + Math.random() * 6;
-    conf.style.width = conf.style.height = `${size}px`;
-    conf.style.left = Math.random() * window.innerWidth + "px";
-    conf.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
-
-    // sway horizontally in JS
-    let swayOffset = 0;
-    let swayDirection = Math.random() > 0.5 ? 1 : -1;
-    const swayAmount = 10;
-    const swaySpeed = 50 + Math.random() * 50;
-    const startLeft = parseFloat(conf.style.left);
-
-    const interval = setInterval(() => {
-      swayOffset += swayDirection;
-      if (swayOffset > swayAmount || swayOffset < -swayAmount) swayDirection *= -1;
-      const elapsed = (Date.now() % 3500) / 3500;
-      const translateY = elapsed * 700;
-      conf.style.transform = `translate(${startLeft + swayOffset}px, ${translateY}px)`;
-    }, swaySpeed);
-
-    document.body.appendChild(conf);
-    setTimeout(() => { clearInterval(interval); conf.remove(); }, 3500);
+  function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    $(id).classList.add("active");
   }
-}
 
-// Show thank-you message
-function showThankYou() {
-  const msg = document.getElementById("thankyou");
-  msg.style.opacity = "1";
-  setTimeout(() => { msg.style.opacity = "0"; }, 2200);
-}
+  function clearTimers() { clearTimeout(timeoutHandle); timeoutHandle = null; }
 
-// --- Admin panel: call backend for password ---
-function enableAdminPanel() {
-  const key = prompt("Enter admin password:");
-  if (!key) return;
+  function startBar(fillId, ms, cb) {
+    const el = $(fillId);
+    el.style.transition = "none";
+    el.style.width = "100%";
+    el.getBoundingClientRect();
+    el.style.transition = `width ${ms}ms linear`;
+    el.style.width = "0%";
+    clearTimers();
+    timeoutHandle = setTimeout(cb, ms);
+  }
 
-  fetch("/api/check-admin", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: key })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error("Incorrect password");
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      const newOption1 = parseInt(prompt("New amount for first button (in dollars):"), 10);
-      const newOption2 = parseInt(prompt("New amount for second button (optional, in dollars):"), 10);
+  async function apiFetch(url, opts = {}) {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      clearTimeout(tid); return res;
+    } catch (e) { clearTimeout(tid); throw e; }
+  }
 
-      if (!newOption1) {
-        // User cancelled or invalid input — reset to defaults
-        donationOptions = [500, 1000, 1500];
+  function friendlyError(msg = "") {
+    const m = msg.toLowerCase();
+    if (m.includes("declined"))                                 return "Your card was declined. Please try a different card.";
+    if (m.includes("network") || m.includes("failed to fetch")) return "A network error occurred. Please try again.";
+    if (m.includes("timeout") || m.includes("timed out"))      return "The reader timed out. Please try again.";
+    if (m.includes("disconnect") || m.includes("no reader"))   return "The card reader isn't responding. Please ensure it's connected.";
+    return "Something went wrong. Please try again or ask a staff member.";
+  }
+
+  async function init() { await loadConfig(); await setupTerminal(); }
+
+  async function loadConfig() {
+    try {
+      const res  = await apiFetch("/api/config");
+      const data = await res.json();
+      renderButtons(data.options || []);
+    } catch { renderButtons(null); }
+  }
+
+  function renderButtons(options) {
+    const wrap = $("donate-options");
+    if (!options || !options.length) {
+      wrap.innerHTML = `<p style="text-align:center;color:var(--muted);font-size:13px;padding:16px 0">Unable to load. Please check the connection.</p>`;
+      return;
+    }
+    wrap.innerHTML = options.map(opt => `
+      <button class="donate-btn" onclick="handleDonate(${opt})">
+        <div class="donate-btn-amount">${bucks(opt)}</div>
+        <div class="donate-btn-cta">Tap to donate</div>
+      </button>
+    `).join("");
+  }
+
+  async function setupTerminal() {
+    if (!window.StripeTerminal) return;
+    try {
+      terminal = StripeTerminal.create({
+        onFetchConnectionToken: async () => {
+          const res = await apiFetch("/api/connection-token", { method: "POST" });
+          return (await res.json()).secret;
+        },
+        onUnexpectedReaderDisconnect: () => {
+          if ($("screen-processing").classList.contains("active"))
+            showError("Reader Disconnected", "The card reader disconnected. Please try again.");
+        }
+      });
+      const found = await terminal.discoverReaders({ simulated: false });
+      if (found.discoveredReaders?.length) await terminal.connectReader(found.discoveredReaders[0]);
+    } catch (e) { console.warn("Terminal:", e.message); }
+  }
+
+  async function handleDonate(amount) { currentAmount = amount; retryCount = 0; await startPaymentFlow(amount); }
+
+  async function startPaymentFlow(amount) {
+    showScreen("screen-processing");
+    $("proc-amount").textContent = bucks(amount);
+    $("proc-sub").textContent    = "Tap, insert, or swipe on the reader";
+    currentIntentId = null;
+    startBar("timeout-fill", TIMEOUT_MS, handleTimeout);
+
+    try {
+      const res  = await apiFetch("/api/create-payment-intent", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create payment.");
+      currentIntentId = data.intentId;
+
+      if (terminal) {
+        const col = await terminal.collectPaymentMethod(data.clientSecret);
+        if (col.error) throw new Error(col.error.message);
+        const proc = await terminal.processPayment(col.paymentIntent);
+        if (proc.error) throw new Error(proc.error.message);
+        const capRes  = await apiFetch("/api/capture-payment", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ intentId: currentIntentId })
+        });
+        const capData = await capRes.json();
+        if (!capRes.ok) throw new Error(capData.error || "Capture failed.");
       } else {
-        donationOptions = [newOption1 * 100];
-        if (newOption2) donationOptions.push(newOption2 * 100);
+        await new Promise(r => setTimeout(r, 2000));
       }
 
-      renderButtons();
+      clearTimers(); showSuccess(amount);
+
+    } catch (err) {
+      clearTimers();
+      if (err.name === "AbortError" || err.message?.includes("canceled")) { goBack(); return; }
+      if (retryCount < MAX_RETRY) {
+        retryCount++;
+        $("proc-sub").textContent = `Trying again\u2026 (${retryCount + 1} of ${MAX_RETRY + 1})`;
+        await new Promise(r => setTimeout(r, 1800));
+        await startPaymentFlow(amount);
+      } else {
+        showError("Payment Unsuccessful", friendlyError(err.message));
+      }
     }
-  })
-  .catch(err => alert(err.message));
-}
-
-
-// Secret logo tap for admin
-document.getElementById("logo").addEventListener("click", () => {
-  adminClickCount++;
-  if (adminClickCount >= adminClickThreshold) {
-    adminClickCount = 0;
-    enableAdminPanel();
   }
-});
 
-// Initialize
-renderButtons();
+  async function handleTimeout() {
+    if (currentIntentId) apiFetch("/api/cancel-payment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intentId: currentIntentId }) }).catch(() => {});
+    if (terminal) { try { await terminal.cancelCollectPaymentMethod(); } catch {} }
+    showError("Session Timed Out", "The session expired. Tap a button to start again.");
+  }
+
+  function showSuccess(amount) {
+    $("success-amount").textContent = bucks(amount);
+    showScreen("screen-success");
+    launchConfetti();
+    currentIntentId = null;
+    startBar("success-fill", RESET_MS, goBack);
+  }
+
+  function showError(title, msg) { $("error-title").textContent = title; $("error-msg").textContent = msg; showScreen("screen-error"); }
+  function goBack() { clearTimers(); currentIntentId = null; retryCount = 0; showScreen("screen-donate"); }
+
+  $("cancel-btn").addEventListener("click", async () => {
+    clearTimers();
+    if (terminal) { try { await terminal.cancelCollectPaymentMethod(); } catch {} }
+    if (currentIntentId) apiFetch("/api/cancel-payment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intentId: currentIntentId }) }).catch(() => {});
+    goBack();
+  });
+
+  $("retry-btn").addEventListener("click", () => { if (currentAmount) { retryCount = 0; startPaymentFlow(currentAmount); } else goBack(); });
+
+  function launchConfetti() {
+    for (let i = 0; i < 60; i++) {
+      const el = document.createElement("div");
+      el.className = "confetti-piece";
+      const s = 4 + Math.random() * 6;
+      el.style.cssText = `width:${s}px;height:${s*(0.4+Math.random()*0.7)}px;left:${Math.random()*100}vw;background:${CF_COLORS[Math.floor(Math.random()*CF_COLORS.length)]};animation-duration:${1.5+Math.random()*1.8}s;animation-delay:${Math.random()*0.5}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+  }
+
+  $("logo-tap-target").addEventListener("click", () => {
+    const img = $("logo-img");
+    img.classList.remove("tapped"); void img.offsetWidth; img.classList.add("tapped");
+    tapCount++; clearTimeout(tapTimer);
+    if (tapCount >= LOGO_TAPS) { tapCount = 0; openPwModal(); }
+    else tapTimer = setTimeout(() => tapCount = 0, 3000);
+  });
+
+  function openPwModal() { pwBuffer = ""; updateDots(); $("pw-msg").textContent = ""; $("modal-pw").classList.add("open"); }
+  function updateDots() { for (let i=0;i<4;i++) $(`dot-${i}`).classList.toggle("filled", i < pwBuffer.length); }
+
+  document.querySelectorAll(".pw-key").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const k = btn.dataset.k;
+      if (k === "cancel") { $("modal-pw").classList.remove("open"); return; }
+      if (k === "back")   { pwBuffer = pwBuffer.slice(0,-1); updateDots(); return; }
+      if (pwBuffer.length >= 4) return;
+      pwBuffer += k; updateDots();
+      if (pwBuffer.length === 4) await verifyPin();
+    });
+  });
+
+  async function verifyPin() {
+    const msg = $("pw-msg");
+    msg.textContent = "Checking\u2026";
+    try {
+      const res  = await apiFetch("/api/check-admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pwBuffer }) });
+      const data = await res.json();
+      pwBuffer = ""; updateDots();
+      if (data.success) { $("modal-pw").classList.remove("open"); openCfgModal(); }
+      else msg.textContent = "Incorrect PIN.";
+    } catch { msg.textContent = "Connection error."; pwBuffer = ""; updateDots(); }
+  }
+
+  async function openCfgModal() {
+    $("cfg-msg").textContent = "";
+    try {
+      const res  = await apiFetch("/api/config");
+      const data = await res.json();
+      const mode = data.options?.length >= 3 ? "triple" : data.options?.length === 2 ? "dual" : "single";
+      $("cfg-mode").value = mode;
+      $("cfg-opt1").value = data.options[0] ? data.options[0] / 100 : "";
+      $("cfg-opt2").value = data.options[1] ? data.options[1] / 100 : "";
+      $("cfg-opt3").value = data.options[2] ? data.options[2] / 100 : "";
+      toggleRows();
+    } catch {}
+    await loadSummary();
+    $("modal-cfg").classList.add("open");
+  }
+
+  async function loadSummary() {
+    const el = $("admin-summary");
+    if (!adminKeyCache) { el.textContent = ""; return; }
+    try {
+      const res  = await apiFetch(`/api/admin/summary?adminKey=${encodeURIComponent(adminKeyCache)}`);
+      const data = await res.json();
+      if (!data.error) el.textContent = `Today: ${data.today_count} gift(s)  ·  Total: ${bucks(parseInt(data.total_cents))}`;
+    } catch {}
+  }
+
+  $("cfg-mode").addEventListener("change", toggleRows);
+
+  function toggleRows() {
+    const m = $("cfg-mode").value;
+    $("opt2-row").style.display = (m === "dual" || m === "triple") ? "block" : "none";
+    $("opt3-row").style.display = m === "triple" ? "block" : "none";
+  }
+
+  $("cfg-cancel").addEventListener("click", () => $("modal-cfg").classList.remove("open"));
+
+  $("cfg-save").addEventListener("click", async () => {
+    const msg  = $("cfg-msg");
+    const mode = $("cfg-mode").value;
+    const opt1 = parseFloat($("cfg-opt1").value);
+    const opt2 = parseFloat($("cfg-opt2").value);
+    const opt3 = parseFloat($("cfg-opt3").value);
+
+    if (!opt1 || opt1 < 1 || opt1 > 10000) { msg.textContent = "Option 1 must be $1–$10,000."; return; }
+    if ((mode === "dual" || mode === "triple") && (!opt2 || opt2 < 1)) { msg.textContent = "Option 2 required."; return; }
+    if (mode === "triple" && (!opt3 || opt3 < 1)) { msg.textContent = "Option 3 required."; return; }
+
+    if (!adminKeyCache) { adminKeyCache = prompt("Enter admin key:"); if (!adminKeyCache) return; }
+
+    msg.textContent = "Saving\u2026";
+
+    try {
+      const res  = await apiFetch("/api/admin/update-config", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, option1: cents(opt1), option2: opt2 ? cents(opt2) : null, option3: opt3 ? cents(opt3) : null, adminKey: adminKeyCache })
+      });
+      const data = await res.json();
+      if (!res.ok) { msg.textContent = data.error || "Failed to save."; return; }
+      msg.className = "cfg-msg ok";
+      msg.textContent = "Saved.";
+      await loadConfig();
+      setTimeout(() => $("modal-cfg").classList.remove("open"), 900);
+    } catch { msg.textContent = "Network error."; }
+  });
+
+  init();
 </script>
-
 </body>
 </html>

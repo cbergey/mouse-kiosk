@@ -382,10 +382,10 @@ app.get("/api/admin/summary", adminLimiter, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'succeeded') AS successful_count,
-        COALESCE(SUM(amount) FILTER (WHERE status = 'succeeded'), 0) AS total_cents,
+        COUNT(*) FILTER (WHERE status IN ('succeeded', 'captured')) AS successful_count,
+        COALESCE(SUM(amount) FILTER (WHERE status IN ('succeeded', 'captured')), 0) AS total_cents,
         COUNT(*) FILTER (WHERE status = 'failed') AS failed_count,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') AS today_count
+        COUNT(*) FILTER (WHERE status IN ('succeeded', 'captured') AND created_at > NOW() - INTERVAL '24 hours') AS today_count
       FROM donations
     `);
     res.json(result.rows[0]);

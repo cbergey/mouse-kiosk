@@ -179,7 +179,7 @@ app.post("/api/create-payment-intent", paymentLimiter, async (req, res) => {
         amount,
         currency: "usd",
         payment_method_types: ["card_present"],
-        capture_method: "automatic",
+        capture_method: "manual",
         metadata: { source: "donation_kiosk" }
       },
       { idempotencyKey }
